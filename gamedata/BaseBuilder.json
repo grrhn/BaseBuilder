@@ -1,0 +1,9 @@
+{
+  "CBaseEntity_SetParent": {
+    "signatures": {
+      "library": "server",
+      "windows": "4D 8B D9 48 85 D2 74 ?",
+      "linux": "48 85 F6 74 ? 48 8B 47 10 F6 40 31 02 75 ? 48 8B 46 10 F6 40 31 02 75 ? B8 ? ? ? ?"
+    }
+  }
+}
