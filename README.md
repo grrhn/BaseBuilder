@@ -6,6 +6,8 @@ A CS2 Plugin Made for Tesla[TR] Server.
 ## Optional
 - [Custom Assets (UgurhanK)](https://steamcommunity.com/sharedfiles/filedetails/?id=3279806633)
 - [MultiAddonManager](https://github.com/Source2ZE/MultiAddonManager)
+- [Trace Ray by Schwarper](https://github.com/schwarper/CS2TraceRay)
+- [CS2MenuManager by Schwarper](https://github.com/schwarper/CS2MenuManager)
 ## Features
 
 - [x] Block Interaction
@@ -30,5 +32,4 @@ A CS2 Plugin Made for Tesla[TR] Server.
 ## Configuration
 After first load, a configuration file will be created in 
 `csgo/addons/counterstrikesharp/configs/plugins/BaseBuilder/BaseBuilder.json`.
-### Game Settings
 ------
