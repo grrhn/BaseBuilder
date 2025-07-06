@@ -34,7 +34,7 @@ public partial class BaseBuilder
 
     public Dictionary<CCSPlayerController, PlayerData> PlayerDatas = new Dictionary<CCSPlayerController, PlayerData>();
 
-    public void PrintChatOnFrame()
+    public void PrintOnFrame()
     {
         if (isEnabled == false) return;
 
@@ -44,71 +44,22 @@ public partial class BaseBuilder
         {
             if (!isBuildTimeEnd && !isPrepTimeEnd)
             {
-                player.PrintToCenter(ReplaceString(cfg.texts.building, 0));
+                player.PrintToCenterHtml(Localizer["BuildTimeHtml", buildTime.ToString()]);
                 continue;
             }
 
             if (isBuildTimeEnd && !isPrepTimeEnd)
             {
-                player.PrintToCenter(ReplaceString(cfg.texts.preparing, 1));
+                player.PrintToCenterHtml(Localizer["PrepTimeHtml", prepTime.ToString()]);
                 continue;
             }
 
             if (isBuildTimeEnd && isPrepTimeEnd)
             {
-                player.PrintToCenter(ReplaceString(cfg.texts.released, 2));
+                player.PrintToCenterHtml(Localizer["ZombiesReleased"]);
                 continue;
             }
-
-            //switch (player.Team)
-            //{
-            //    case CsTeam.CounterTerrorist:
-
-
-            //        break;
-
-            //    case CsTeam.Terrorist:
-
-            //        break;
-
-            //    default:
-            //        break;
-            //}
         }
-    }
-
-    public string ReplaceString(string message, int type)
-    {
-        if(type == 0)
-        {
-            return ReplaceColorTags(message.Replace("{time}", buildTime.ToString()));
-        } else if(type == 1)
-        {
-            return ReplaceColorTags(message.Replace("{time}", prepTime.ToString()));
-        }
-        else
-        {
-            return ReplaceColorTags(message);
-        }
-    }
-
-    public string ReplaceColorTags(string input)
-    {
-
-        string[] colorPatterns =
-            {
-            "{DEFAULT}", "{DARKRED}", "{LIGHTPURPLE}", "{GREEN}", "{OLIVE}", "{LIME}", "{RED}", "{GREY}",
-            "{YELLOW}", "{SILVER}", "{BLUE}", "{DARKBLUE}", "{ORANGE}", "{PURPLE}"
-        };
-        string[] colorReplacements =
-        {
-            "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\x09", "\x0A", "\x0B", "\x0C", "\x10", "\x0E"
-        };
-
-        for (var i = 0; i < colorPatterns.Length; i++)
-            input = input.Replace(colorPatterns[i], colorReplacements[i]);
-
-        return input;
     }
 
     [GameEventHandler]
@@ -130,6 +81,11 @@ public partial class BaseBuilder
 
         foreach (var p in Utilities.GetPlayers().Where(o => o != null && o.CheckValid()))
         {
+            if (!PlayerDatas.ContainsKey(p))
+            {
+                PlayerDatas[p] = new PlayerData(colors[Random.Shared.Next(0, colors.Count)], classes.Values.First());
+            }
+
             if (p.TeamNum == ZOMBIE) continue;
 
             p.PlayerPawn.Value!.Render = PlayerDatas[p].playerColor;
@@ -180,7 +136,7 @@ public partial class BaseBuilder
                     //Give Guns Menu To Players
                     foreach (var p in Utilities.GetPlayers().Where(o => o != null && o.CheckValid() && o.TeamNum == BUILDER))
                     {
-                        MenuManager.OpenCenterHtmlMenu(this, p, Guns());
+                        Guns(p);
                     }
                 }
 
@@ -208,6 +164,23 @@ public partial class BaseBuilder
         }, TimerFlags.REPEAT);
 
         return HookResult.Continue;
+    }
+
+    public void Teamswitch_RoundStart(EventRoundStart @event)
+    {
+        foreach (var player in Utilities.GetPlayers().Where(p => p != null && p.IsValid && p.PlayerPawn.IsValid && p.Connected == PlayerConnectedState.PlayerConnected))
+        {
+            if (!PlayerDatas.TryGetValue(player, out var data)) continue;
+
+            if (player.TeamNum == ZOMBIE)
+            {
+                data.wasBuilderThisRound = false;
+            }
+            else
+            {
+                data.wasBuilderThisRound = true;
+            }
+        }
     }
 
     [GameEventHandler]
@@ -258,6 +231,7 @@ public partial class BaseBuilder
         Server.ExecuteCommand("mp_t_default_secondary \"\"");
         Server.ExecuteCommand($"mp_roundtime {(int)(cfg.RoundTime / 60)}");
         Server.ExecuteCommand($"sv_alltalk 1");
+        Server.ExecuteCommand("exec BaseBuilder/basebuilder.cfg");
 
         //Reset All Timers
         foreach (var timer in Timers)
@@ -275,20 +249,12 @@ public partial class BaseBuilder
         UsedBlocks.Clear();
         PlayerHolds.Clear();
 
-        colors = new List<Color>() { Color.AliceBlue, Color.Aqua, Color.Blue, Color.Brown, Color.BurlyWood, Color.Chocolate, Color.Cyan, Color.DarkBlue, Color.DarkGreen, Color.DarkMagenta, Color.DarkOrange, Color.DarkRed, Color.Green, Color.Yellow, Color.Red, Color.Silver, Color.Pink, Color.Purple };
+        colors = new List<Color>() { Color.AliceBlue, Color.Aqua, Color.Blue, Color.Brown, Color.BurlyWood, Color.Chocolate, Color.Cyan, Color.DarkBlue, Color.DarkGreen, Color.DarkMagenta, Color.DarkOrange, Color.DarkRed, Color.Green, Color.Yellow, Color.Red, Color.Silver, Color.Pink, Color.Purple, Color.DarkCyan, Color.DarkGoldenrod, Color.AntiqueWhite, Color.Aquamarine, Color.Bisque };
     }
 
     public void TeleportToLobby(CsTeam Team)
     {
-        if(Team == CsTeam.Terrorist && isPrepTimeEnd)
-        {
-            return;
-        } 
-        
-        if(Team == CsTeam.CounterTerrorist && isBuildTimeEnd)
-        {
-            return;
-        }
+        if((Team == CsTeam.Terrorist && isPrepTimeEnd) || (Team == CsTeam.CounterTerrorist && isBuildTimeEnd)) return;
 
         Vector destination = Vector.Zero;
 

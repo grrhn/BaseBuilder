@@ -18,6 +18,9 @@ using System.Data;
 using CounterStrikeSharp.API.Modules.Extensions;
 using System.Reflection;
 using System.Diagnostics.Tracing;
+using CS2TraceRay.Class;
+using CS2TraceRay.Enum;
+using CS2TraceRay.Struct;
 
 namespace BaseBuilder;
 
@@ -25,13 +28,13 @@ public partial class BaseBuilder
 {
     public Dictionary<CBaseProp, PropData> UsedBlocks = new Dictionary<CBaseProp, PropData>();
     public Dictionary<CCSPlayerController, Builder> PlayerHolds = new Dictionary<CCSPlayerController, Builder>();
-    public List<Color> colors = new List<Color>() { Color.AliceBlue, Color.Aqua, Color.Blue, Color.Brown, Color.BurlyWood, Color.Chocolate, Color.Cyan, Color.DarkBlue, Color.DarkGreen, Color.DarkMagenta, Color.DarkOrange, Color.DarkRed, Color.Green, Color.Yellow, Color.Red, Color.Pink, Color.Purple, Color.ForestGreen, Color.LightCyan, Color.Lime };
+    public List<Color> colors = new List<Color>() { Color.AliceBlue, Color.Aqua, Color.Blue, Color.Brown, Color.BurlyWood, Color.Chocolate, Color.Cyan, Color.DarkBlue, Color.DarkGreen, Color.DarkMagenta, Color.DarkOrange, Color.DarkRed, Color.Green, Color.Yellow, Color.Red, Color.Silver, Color.Pink, Color.Purple, Color.DarkCyan, Color.DarkGoldenrod, Color.AntiqueWhite, Color.Aquamarine, Color.Bisque };
 
     public void OnGameFrame()
     {
         if (isEnabled == false) return;
 
-        PrintChatOnFrame();
+        PrintOnFrame();
 
         //Disable block actions in prep time
         if (isBuildTimeEnd) return;
@@ -65,12 +68,17 @@ public partial class BaseBuilder
                 }
                 else
                 {
-                    var block = player.GetClientAimTarget();
+                    var trace = player.GetGameTraceByEyePosition(TraceMask.MaskShot, Contents.NoDraw, player);
+
+                    if (trace == null) return;
+
+                    CEntityInstance block = new CEntityInstance(trace.Value.HitEntity);
+                    if (!block.IsValid || !block.DesignerName.Contains("prop")) return;
+
                     if (block != null)
                     {
-                        if (UsedBlocks.ContainsKey(block) && UsedBlocks[block].owner != player) return;
-
-                        FirstPress(player, block);
+                        if (UsedBlocks.ContainsKey(block.As<CBaseProp>()) && UsedBlocks[block.As<CBaseProp>()].owner != player) return;
+                        FirstPress(player, block.As<CBaseProp>(), trace);
                     }
                 }
             }
@@ -84,7 +92,7 @@ public partial class BaseBuilder
                         player.ExecuteClientCommand("play sounds/basebuilder/block_drop.vsnd");
 
                         newprop.Teleport(new Vector(-10, -10, -10));
-                        CBaseEntity_SetParent(PlayerHolds[player].mainProp, newprop);
+                        PlayerHolds[player].mainProp.AcceptInput("SetParent", newprop, PlayerHolds[player].mainProp, "!activator");
                         PlayerHolds[player].emptyProp.Remove();
                         PlayerHolds.Remove(player);
                     }
@@ -93,20 +101,17 @@ public partial class BaseBuilder
         }
     }
 
-    public void FirstPress(CCSPlayerController player, CBaseProp prop)
+    public void FirstPress(CCSPlayerController player, CBaseProp prop, CGameTrace? trace)
     {
-        var hitPoint = TraceShape(new Vector(player.PlayerPawn.Value!.AbsOrigin!.X, player.PlayerPawn.Value!.AbsOrigin!.Y, player.PlayerPawn.Value!.AbsOrigin!.Z + player.PlayerPawn.Value.CameraServices!.OldPlayerViewOffsetZ), player.PlayerPawn.Value!.EyeAngles!, false, true);
+        if(trace == null || !trace.HasValue) return;
 
         player.ExecuteClientCommand("play sounds/basebuilder/block_grab.vsnd");
 
-        if (prop != null && prop.IsValid && hitPoint != null && hitPoint.HasValue)
+        if (prop != null && prop.IsValid)
         {
             //Change block color to player color
             prop.Render = PlayerDatas[player].playerColor;
             Utilities.SetStateChanged(prop, "CBaseModelEntity", "m_clrRender");
-
-            //fixed some bugs
-            if (VectorUtils.CalculateDistance(prop.AbsOrigin!, Vector3toVector(hitPoint.Value)) > 150) return;
 
             var emptyProp = Utilities.CreateEntityByName<CDynamicProp>("prop_dynamic");
             if (emptyProp != null && emptyProp.IsValid)
@@ -115,7 +120,7 @@ public partial class BaseBuilder
                 Server.NextFrame(() => Utilities.SetStateChanged(emptyProp, "CBaseModelEntity", "m_clrRender"));
 
                 emptyProp.DispatchSpawn();
-                emptyProp.Teleport(Vector3toVector(hitPoint.Value));
+                emptyProp.Teleport(trace.Value.EndPos.ConvertVector());
                 if (emptyProp.Entity != null) emptyProp.Entity.Name = "parent_prop";
 
                 //Distance
@@ -143,8 +148,7 @@ public partial class BaseBuilder
             if (PlayerHolds[player].distance > 350) PlayerHolds[player].distance -= 7;
             PlayerHolds[player].distance -= 3;
         }
-
-        CBaseEntity_SetParent(PlayerHolds[player].mainProp, PlayerHolds[player].emptyProp);
+        PlayerHolds[player].mainProp.AcceptInput("SetParent", PlayerHolds[player].emptyProp, PlayerHolds[player].mainProp, "!activator");
     }
 
     public void RemoveNotUsedBlocks()
@@ -159,19 +163,6 @@ public partial class BaseBuilder
             //Checking if removing parent prop
             if (!UsedBlocks.ContainsKey(entity) && entity.AbsOrigin!.Z > -9) entity.Remove();
         }
-    }
-
-    private static MemoryFunctionVoid<CBaseEntity, CBaseEntity, CUtlStringToken?, matrix3x4_t?> CBaseEntity_SetParentFunc
-        = new(GameData.GetSignature("CBaseEntity_SetParent"));
-
-    public static void CBaseEntity_SetParent(CBaseEntity childrenEntity, CBaseEntity parentEntity)
-    {
-        if (!childrenEntity.IsValid || !parentEntity.IsValid) return;
-
-        var origin = new Vector(childrenEntity.AbsOrigin!.X, childrenEntity.AbsOrigin!.Y, childrenEntity.AbsOrigin!.Z);
-        CBaseEntity_SetParentFunc.Invoke(childrenEntity, parentEntity, null, null);
-        // If not teleported, the childrenEntity will not follow the parentEntity correctly.
-        childrenEntity.Teleport(origin, new QAngle(IntPtr.Zero), new Vector(IntPtr.Zero));
     }
 }
 

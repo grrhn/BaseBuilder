@@ -1,7 +1,8 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Menu;
+using CS2MenuManager.API.Class;
+using CS2MenuManager.API.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace BaseBuilder;
 
 public partial class BaseBuilder
 {
-    [ConsoleCommand("guns")]
+    [ConsoleCommand("css_guns")]
     public void OnGunsCommand(CCSPlayerController? caller, CommandInfo info)
     {
         if (isEnabled == false) return;
@@ -20,16 +21,16 @@ public partial class BaseBuilder
 
         if (isBuildTimeEnd && !isPrepTimeEnd)
         {
-            MenuManager.OpenCenterHtmlMenu(this, caller, Guns());
+            Guns(caller);
         }
     }
 
 
-    public CenterHtmlMenu Guns()
+    public void Guns(CCSPlayerController sendmenuto)
     {
-        var menu = new CenterHtmlMenu("Choose Weapon", this);
+        var menu = new WasdMenu("Choose Weapon", this);
 
-        menu.AddMenuOption("AK-47", (player, option) =>
+        menu.AddItem("AK-47", (player, option) =>
         {
             if (isPrepTimeEnd || player.TeamNum == ZOMBIE || isPrepTimeEnd || !player.PawnIsAlive) { MenuManager.CloseActiveMenu(player); return; }
 
@@ -40,7 +41,7 @@ public partial class BaseBuilder
             player.GiveNamedItem("weapon_deagle");
         });
 
-        menu.AddMenuOption("M4A4", (player, option) =>
+        menu.AddItem("M4A4", (player, option) =>
         {
             if (isPrepTimeEnd || player.TeamNum == ZOMBIE || isPrepTimeEnd || !player.PawnIsAlive) { MenuManager.CloseActiveMenu(player); return; }
             MenuManager.CloseActiveMenu(player);
@@ -50,7 +51,7 @@ public partial class BaseBuilder
             player.GiveNamedItem("weapon_deagle");
         });
 
-        menu.AddMenuOption("M4A1-S", (player, option) =>
+        menu.AddItem("M4A1-S", (player, option) =>
         {
             if (isPrepTimeEnd || player.TeamNum == ZOMBIE || isPrepTimeEnd || !player.PawnIsAlive) { MenuManager.CloseActiveMenu(player); return; }
             MenuManager.CloseActiveMenu(player);
@@ -60,7 +61,7 @@ public partial class BaseBuilder
             player.GiveNamedItem("weapon_deagle");
         });
 
-        menu.AddMenuOption("AWP", (player, option) =>
+        menu.AddItem("AWP", (player, option) =>
         {
             if (isPrepTimeEnd || player.TeamNum == ZOMBIE || isPrepTimeEnd || !player.PawnIsAlive) { MenuManager.CloseActiveMenu(player); return; }
             MenuManager.CloseActiveMenu(player);
@@ -70,7 +71,7 @@ public partial class BaseBuilder
             player.GiveNamedItem("weapon_deagle");
         });
 
-        menu.AddMenuOption("SSG 08", (player, option) =>
+        menu.AddItem("SSG 08", (player, option) =>
         {
             if (isPrepTimeEnd || player.TeamNum == ZOMBIE || isPrepTimeEnd || !player.PawnIsAlive) { MenuManager.CloseActiveMenu(player); return; }
             MenuManager.CloseActiveMenu(player);
@@ -80,6 +81,6 @@ public partial class BaseBuilder
             player.GiveNamedItem("weapon_deagle");
         });
 
-        return menu;
+        menu.Display(sendmenuto, 0);
     }
 }

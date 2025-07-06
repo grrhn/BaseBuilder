@@ -1,0 +1,13 @@
+{
+    "prefix": "{darkred}[BaseBuilder]{default} ",
+    "BuildTimeHtml": "<font class='fontSize-xl'>Build Time {0}</font>",
+    "PrepTimeHtml": "<font class='fontSize-xl'>Prep Time {0}</font>",
+    "ZombiesReleased": "<font class='fontSize-xl'>Zombies Released</font>",
+    "NotEnoughMoney": "You {red}dont have {default}enough money!",
+    "EarnMoneyKill": "You earned {0} credit by killing {1}.",
+    "EarnMoneyAssist": "You earned {0} credit by assisting {1}.",
+    "PurchaseSuccesful": "The purchase is successful. Balance: {0}",
+    "Balance": "Balance: {0}",
+    "TargetNotFound": "Target not found.",
+    "CreditGave": "{2} credits given to {0} by {1}."
+}

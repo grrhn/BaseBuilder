@@ -22,7 +22,7 @@ namespace BaseBuilder;
 
 public partial class BaseBuilder
 {
-    [GameEventHandler(HookMode.Post)]
+    [GameEventHandler]
     public HookResult EventPlayerSpawn(EventPlayerSpawn @event, GameEventInfo info)
     {
         if (@event == null) return HookResult.Continue;
@@ -34,6 +34,8 @@ public partial class BaseBuilder
 
         AddTimer(1, () =>
         {
+            if (player == null || !player.IsValid || player.Connected != PlayerConnectedState.PlayerConnected || !player.PawnIsAlive) return;
+
             player.RemoveWeapons();
             player.GiveNamedItem("weapon_knife");
         });
@@ -43,17 +45,18 @@ public partial class BaseBuilder
             Server.NextFrame(() =>
             {
                 player.SetHp(PlayerDatas[player].playerZombie.Health + PlayerDatas[player].extraHpForT);
-                player.PlayerPawn.Value!.Speed = PlayerDatas[player].playerZombie.SpeedMultiplier * PlayerDatas[player].extraSpeedMultiplierForT;
+                player.PlayerPawn.Value!.VelocityModifier = PlayerDatas[player].playerZombie.SpeedMultiplier * PlayerDatas[player].extraSpeedMultiplierForT;
                 player.PlayerPawn.Value!.GravityScale = PlayerDatas[player].playerZombie.GravityMultiplier * PlayerDatas[player].extraGravityMultiplierForT;
-                player.PlayerPawn.Value!.SetModel(PlayerDatas[player].playerZombie.ModelPath);
+                if(PlayerDatas[player].playerZombie.ModelPath != "") player.PlayerPawn.Value!.SetModel(PlayerDatas[player].playerZombie.ModelPath);
             });
         } else
         {
+            PlayerDatas[player].wasBuilderThisRound = true;
             Server.NextFrame(() =>
             {
                 player.SetHp(100 + PlayerDatas[player].extraHpForCt);
-                player.PlayerPawn.Value!.Speed = 1;
-                player.PlayerPawn.Value!.GravityScale = 1;
+                player.PlayerPawn.Value!.VelocityModifier = PlayerDatas[player].extraSpeedMultiplierForCT;
+                player.PlayerPawn.Value!.GravityScale = PlayerDatas[player].extraGravityMultiplierForCt;
             });
         }
 

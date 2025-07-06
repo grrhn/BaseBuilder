@@ -30,6 +30,8 @@ public partial class BaseBuilder
 
         var player = @event.Userid;
 
+        if (isEnabled == false) return HookResult.Continue;
+
         if (player == null || !player.CheckValid() || player.IsBot) return HookResult.Continue;
 
         int tcount = Utilities.GetPlayers().Where(p => p.CheckValid() && p.Team == CsTeam.Terrorist).Count();
@@ -40,26 +42,16 @@ public partial class BaseBuilder
             PlayerDatas[player] = new PlayerData(colors[Random.Shared.Next(0, colors.Count)], classes.Values.First());
         }
 
-        if (isEnabled == false) return HookResult.Continue;
-
-        /*AddTimer(5, () =>
+        if (tcount >= ctcount)
         {
-            if (tcount < ctcount)
-            {
-                player.SwitchTeam(CsTeam.Terrorist);
-                player.RespawnClient();
-                player.SwitchTeam(CsTeam.CounterTerrorist);
-                player.SwitchTeam(CsTeam.Terrorist);
-                player.PendingTeamNum = 2;
-                player.TeamChanged = false;
-            }
-            else
-            {
-                player.SwitchTeam(CsTeam.CounterTerrorist);
-                PlayerDatas[player].wasBuilderThisRound = true;
-            }
-        });
-        */
+            PlayerDatas[player].wasBuilderThisRound = true; 
+            player.ChangeTeam(CsTeam.CounterTerrorist);
+        }
+        else
+        {
+            player.ChangeTeam(CsTeam.Terrorist);
+        }
+
         return HookResult.Continue;
     }
 }

@@ -48,7 +48,8 @@ public partial class BaseBuilder
                 player.SwitchTeam(CsTeam.CounterTerrorist);
             }
 
-            player.CommitSuicide(false, true);
+            player.RemoveWeapons();
+            player.GiveNamedItem("weapon_knife");
 
             data.wasBuilderThisRound = false;
         }

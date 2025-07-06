@@ -35,10 +35,10 @@ public partial class BaseBuilder
 
         if (player == null || victim == null || !player.CheckValid() || !victim.CheckValid() || player == victim) return;
         PlayerDatas[player].balance += cfg.Economy.OnKill;
-        player.PrintToChat(ReplaceColorTags(cfg.texts.Prefix + cfg.texts.EarnMoneyKill).Replace("{enemy}", victim.PlayerName).Replace("{credit}", cfg.Economy.OnKill.ToString()));
+        player.PrintToChat(Localizer["prefix"] + Localizer["EarnMoneyKill", cfg.Economy.OnKill.ToString()]);
 
         CCSPlayerController? assister = @event.Assister;
-        if (assister != null && assister.CheckValid()){ PlayerDatas[assister].balance += cfg.Economy.OnAssist; assister.PrintToChat(ReplaceColorTags(cfg.texts.Prefix + cfg.texts.EarnMoneyAssist).Replace("{enemy}", victim.PlayerName).Replace("{credit}", cfg.Economy.OnAssist.ToString()));}
+        if (assister != null && assister.CheckValid()){ PlayerDatas[assister].balance += cfg.Economy.OnAssist; assister.PrintToChat(Localizer["prefix"] + Localizer["EarnMoneyAssist", cfg.Economy.OnAssist.ToString()]); }
 
         return;
     }
@@ -63,6 +63,9 @@ public partial class BaseBuilder
 
         if (player == null || !player.CheckValid() || player.TeamNum != BUILDER || !isPrepTimeEnd || !isBuildTimeEnd) return;
 
-        player.SwitchTeam(CsTeam.Terrorist);
+        if (Utilities.GetPlayers().Where(p => p != null && p.IsValid && p.Connected == PlayerConnectedState.PlayerConnected && p.TeamNum == 3).Count() > 1) 
+        { 
+            player.ChangeTeam(CsTeam.Terrorist);
+        }
     }
 }

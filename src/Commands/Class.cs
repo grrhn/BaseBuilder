@@ -2,7 +2,8 @@
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Menu;
+using CS2MenuManager.API.Class;
+using CS2MenuManager.API.Menu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace BaseBuilder;
 
 public partial class BaseBuilder
 {
-    [ConsoleCommand("class"), ConsoleCommand("zombie"), ConsoleCommand("zombi")]
+    [ConsoleCommand("css_class"), ConsoleCommand("css_zombie"), ConsoleCommand("css_zombi")]
     public void OnClassCommand(CCSPlayerController? caller, CommandInfo info)
     {
         if (isEnabled == false) return;
@@ -21,17 +22,17 @@ public partial class BaseBuilder
 
         if(caller.TeamNum == ZOMBIE)
         {
-            MenuManager.OpenCenterHtmlMenu(this, caller, Class());
+            ClassMenu(caller);
         }
     }
 
-    public CenterHtmlMenu Class()
+    public void ClassMenu(CCSPlayerController sendmenuto)
     {
-        var menu = new CenterHtmlMenu("Choose Class", this);
+        var menu = new WasdMenu("Choose Class", this);
 
         foreach (var @class in classes)
         {
-            menu.AddMenuOption(@class.Key, (player, option) =>
+            menu.AddItem(@class.Key, (player, option) =>
             {
                 if (player.TeamNum != ZOMBIE) { MenuManager.CloseActiveMenu(player); return; }
 
@@ -41,6 +42,6 @@ public partial class BaseBuilder
             });
         }
 
-        return menu;
+        menu.Display(sendmenuto, 0);
     }
 }

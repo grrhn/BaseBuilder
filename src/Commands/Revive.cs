@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
@@ -13,7 +14,7 @@ namespace BaseBuilder;
 
 public partial class BaseBuilder
 {
-    [ConsoleCommand("revive"), ConsoleCommand("rev")]
+    [ConsoleCommand("css_revive"), ConsoleCommand("css_rev")]
     public void OnReviveCommand(CCSPlayerController? caller, CommandInfo info)
     {
         if (isEnabled == false) return;
@@ -24,12 +25,13 @@ public partial class BaseBuilder
         if(caller.TeamNum == BUILDER && (!isBuildTimeEnd || !isPrepTimeEnd))
         {
             caller.RespawnClient();
+            TeleportToLobby(caller);
         }
 
-        if(caller.TeamNum == ZOMBIE && isPrepTimeEnd)
+        if(caller.TeamNum == ZOMBIE)
         {
             caller.RespawnClient();
-            TeleportToLobby(caller);
+            if(isPrepTimeEnd) TeleportToLobby(caller);
         }
     }
 }

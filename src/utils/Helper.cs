@@ -11,34 +11,20 @@ using Serilog.Sinks.File;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Entities;
+using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
-using CSTimer = CounterStrikeSharp.API.Modules.Timers;
-using System.Data;
-using CounterStrikeSharp.API.Core.Translations;
+using System.Xml.Linq;
 
 namespace BaseBuilder;
 
 public partial class BaseBuilder
 {
-    public void OnPrecache(ResourceManifest manifest)
+    public void ExecutePlay(string path)
     {
-        foreach (var mapName in Config.PluginStartIn)
+        foreach (var p in Utilities.GetPlayers().Where(x => x != null && x.CheckValid()))
         {
-            if (Server.MapName.Contains(mapName))
-            {
-                isEnabled = true;
-                break;
-            }
-        }
-
-        if (!isEnabled) return;
-
-        foreach (var zombie in Config.zombies.Values)
-        {
-            manifest.AddResource(zombie.ModelPath);
-            if(zombie.ModelArmPath != "") manifest.AddResource(zombie.ModelArmPath);
+            p.ExecuteClientCommand($"play {path}");
         }
     }
 }
