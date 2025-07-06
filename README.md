@@ -3,11 +3,11 @@ A CS2 Plugin Made for Tesla[TR] Server.
 ## Requirements
 - [MetaMod:Source](https://github.com/alliedmodders/metamod-source/)
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
+- [Trace Ray by Schwarper](https://github.com/schwarper/CS2TraceRay)
+- [CS2MenuManager by Schwarper](https://github.com/schwarper/CS2MenuManager)
 ## Optional
 - [Custom Assets (UgurhanK)](https://steamcommunity.com/sharedfiles/filedetails/?id=3279806633)
 - [MultiAddonManager](https://github.com/Source2ZE/MultiAddonManager)
-- [Trace Ray by Schwarper](https://github.com/schwarper/CS2TraceRay)
-- [CS2MenuManager by Schwarper](https://github.com/schwarper/CS2MenuManager)
 ## Features
 
 - [x] Block Interaction
